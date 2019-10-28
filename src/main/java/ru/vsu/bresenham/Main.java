@@ -25,22 +25,18 @@ import java.util.Map;
 
 public class Main extends Application {
 
-    private static final int BRUSH_SIZE = 10;
-    private static final int ROWS_COUNT = 20;
-    private static final int COLS_COUNT = 10;
-
     private Map<List<Integer>, Integer> trainingSamples = new LinkedHashMap<>();
 
     @FXML
     private Canvas canvas;
-    @FXML
-    private Label result;
-    @FXML
-    private TextField trainingSamplesCountTextField;
 
     @FXML
-    void onActionAddTrainingSample(ActionEvent event) {
-        List<Integer> inputs = getInputs();
+    void onActionDrawCircle(ActionEvent event) {
+        int width = (int)canvas.getWidth();
+        int height = (int)canvas.getHeight();
+        canvas.getGraphicsContext2D().
+
+
 
         if (inputs.stream().allMatch(v -> v.equals(0))) {
             result.setText("Error: all inputs = 0");
@@ -52,11 +48,8 @@ public class Main extends Application {
         } else {
             trainingSamples.put(inputs, 0);
         }
-        trainingSamplesCountTextField.setText(String.valueOf(trainingSamples.size()));
         clearCanvas();
     }
-
-    private Perceptron perceptron = new Perceptron(ROWS_COUNT * COLS_COUNT);
 
     @FXML
     void onActionIdentify(ActionEvent event) {
@@ -70,37 +63,6 @@ public class Main extends Application {
             result.setBackground(new Background(new BackgroundFill(Color.RED, null, null)));
         }
     }
-
-    @FXML
-    void onActionTrain(ActionEvent event) {
-        for (int i = 0; i < 3; i++) {
-            System.out.println("==iteration " + i + " ==");
-            perceptron.train(trainingSamples);
-            System.out.println("Trained weights: " + perceptron.getWeights());
-
-//            digits.forEach((k, v) -> {
-//                boolean b = bresenham.identify(k);
-//                if (b) {
-//                    System.out.println("EQUAL");
-//                } else {
-//                    System.out.println("NOT");
-//                }
-//            });
-//            System.out.println("====================");
-//            if (i == 25 || i == 49) {
-//                System.out.println("Test samples");
-//                testSamples.forEach((k, v) -> {
-//                    boolean b = bresenham.identify(k);
-//                    if (b) {
-//                        System.out.println("EQUAL");
-//                    } else {
-//                        System.out.println("NOT");
-//                    }
-//                });
-//            }
-        }
-    }
-
 
     public List<Integer> getInputs() {
         int height = (int) canvas.getHeight();
@@ -134,27 +96,6 @@ public class Main extends Application {
         return 0;
     }
 
-    @FXML
-    void onMouseDragged(MouseEvent event) {
-        GraphicsContext gc = canvas.getGraphicsContext2D();
-        gc.fillRect(event.getX(), event.getY(), BRUSH_SIZE, BRUSH_SIZE);
-    }
-
-    @FXML
-    void onActionReset(ActionEvent event) {
-        clearTrainingSamples();
-    }
-
-    @FXML
-    void onActionClear(ActionEvent event) {
-        clearCanvas();
-    }
-
-    private void clearTrainingSamples(){
-        trainingSamples.clear();
-        trainingSamplesCountTextField.setText(String.valueOf(0));
-    }
-
     @Override
     public void start(Stage primaryStage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("/sample.fxml"));
@@ -167,14 +108,6 @@ public class Main extends Application {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
         result.setText("");
         result.setBackground(null);
-    }
-
-
-    @FXML
-    void onActionResetAll(ActionEvent event) {
-        clearCanvas();
-        perceptron = new Perceptron(ROWS_COUNT * COLS_COUNT);
-        clearTrainingSamples();
     }
 
     public static void main(String[] args) {
