@@ -10,7 +10,7 @@
    <children>
       <HBox prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <Canvas fx:id="canvas" height="400.0" onMouseDragged="#onMouseDragged" width="400.0" />
+            <Canvas fx:id="canvas" height="400.0" width="400.0" />
             <VBox>
                <children>
                   <Button mnemonicParsing="false" onAction="#onActionDrawCircle" prefHeight="51.0" prefWidth="300.0" text="DrawCircle" />

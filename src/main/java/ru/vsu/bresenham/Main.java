@@ -11,6 +11,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.PixelReader;
+import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
@@ -32,68 +33,74 @@ public class Main extends Application {
 
     @FXML
     void onActionDrawCircle(ActionEvent event) {
-        int width = (int)canvas.getWidth();
-        int height = (int)canvas.getHeight();
-        canvas.getGraphicsContext2D().
-
-
-
-        if (inputs.stream().allMatch(v -> v.equals(0))) {
-            result.setText("Error: all inputs = 0");
-            return;
-        }
-
-        if (trainingSamples.isEmpty()) {
-            trainingSamples.put(inputs, 1);
-        } else {
-            trainingSamples.put(inputs, 0);
-        }
-        clearCanvas();
-    }
-
-    @FXML
-    void onActionIdentify(ActionEvent event) {
-        List<Integer> inputs = getInputs();
-        boolean identify = perceptron.identify(inputs);
-        if (identify) {
-            result.setText("Success");
-            result.setBackground(new Background(new BackgroundFill(Color.GREEN, null, null)));
-        } else {
-            result.setText("Failed");
-            result.setBackground(new Background(new BackgroundFill(Color.RED, null, null)));
-        }
-    }
-
-    public List<Integer> getInputs() {
-        int height = (int) canvas.getHeight();
         int width = (int) canvas.getWidth();
-        WritableImage snapshot = canvas.snapshot(null, null);
-        int rowSize = height / ROWS_COUNT;
-        int colSize = width / COLS_COUNT;
+        int height = (int) canvas.getHeight();
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        PixelWriter pixelWriter = gc.getPixelWriter();
 
-        List<Integer> inputs = new ArrayList<>();
+        int h = height / 2;
+//        for (int i = 0; i < width; i++) {
+//            pixelWriter.setColor(h, i, Color.RED);
+//        }
 
-        for (int i = 0; i < ROWS_COUNT; i++) {
-            for (int j = 0; j < COLS_COUNT; j++) {
-                int input = getInput(snapshot, i * rowSize, j * colSize, rowSize, colSize);
-                inputs.add(input);
-            }
-        }
-        return inputs;
+        draw(h, h, 100);
+
+
+//        clearCanvas();
     }
 
-    private int getInput(WritableImage snapshot, int h, int w, int rowSize, int colSize) {
-        PixelReader pixelReader = snapshot.getPixelReader();
-        int iMax = h + rowSize;
-        int jMax = w + colSize;
-        for (int i = h; i < iMax; i++) {
-            for (int j = w; j < jMax; j++) {
-                if (pixelReader.getColor(j, i).equals(Color.BLACK)) {
-                    return 1;
+    public void draw(int x0, int y0, int R) {
+        int x = 0;
+        int y = R;
+
+        do {
+            drawPixel(x, y);
+            System.out.println("(" + x + "," + y + ")");
+            double deltaDiag = (x + 1) * (x + 1) + (y - 1) * (y - 1) - R * R;
+            if (deltaDiag < 0) {  //(точка внутри => вправо или по диагонали)
+                double deltaRight = (x + 1) * (x + 1) + y * y - R * R;
+                if (Math.abs(deltaDiag) - Math.abs(deltaRight) < 0) { //диагональный пиксель ближе к окружности
+                    x += 1;
+                    y -= 1;
+//                    drawPixel(x+1, y+1);
+                } else {
+                    x += 1;
+//                    drawPixel(x+1, y); //горизонтальный пиксель ближе к окружности
+                }
+            } else { //(точка внутри => вниз или по диагонали)
+                double deltaBottom = (x) * (x) + (y - 1) * (y - 1) - R * R;
+                if (Math.abs(deltaDiag) - Math.abs(deltaBottom) < 0) { //диагональный пиксель ближе к окружности
+                    x += 1;
+                    y -= 1;
+//                    drawPixel(x+1, y+1);
+                } else {
+                    y -= 1;
+//                    drawPixel(x, y+1); //вертикальный пиксель ближе к окружности
                 }
             }
-        }
-        return 0;
+//            System.out.println("(" + x + "," + y + ")");
+//            drawPixel(x, y);
+        } while (x <= R && y >= 0);
+
+    }
+
+    public void drawPixel(int x, int y) {
+        draw(x, y);
+        draw(-x, -y);
+        draw(x, -y);
+        draw(-x, y);
+    }
+
+    public void draw(int x, int y) {
+        int width = (int) canvas.getWidth();
+        int height = (int) canvas.getHeight();
+        int h2 = height / 2;
+        int w2 = width / 2;
+        x += w2;
+        y += h2;
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        PixelWriter pixelWriter = gc.getPixelWriter();
+        pixelWriter.setColor(x, y, Color.RED);
     }
 
     @Override
@@ -106,8 +113,6 @@ public class Main extends Application {
     private void clearCanvas() {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        result.setText("");
-        result.setBackground(null);
     }
 
     public static void main(String[] args) {
